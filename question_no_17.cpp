@@ -1,19 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static int cur_pos=0;
 
 struct process_structure{
 	int process_ID;
 	int arrival_time;
 	int burst_time;
 	int priority;
-	int queue_ID;
-	int Num;
+	int Num=0;
 	int Finish_time;
-	int Remaining_time;
 	int Waiting_time;
-	int Start_time;
+	int Start_time=-1;
+	int stop_time;
 	int Res_time;
 }p1[50],p2[50];
 
@@ -70,9 +68,12 @@ main(){
 	printf("Enter the number of processes : ");
 	scanf("%d",&n);
 	int val;
+	int next_index[n];
 	
 	//get the process imformation
+	
 	for(int i=0;i<n;i++){
+		p1[i].Num = n;
 		printf("\nEnter the process information for the process %d :",i+1);
 		printf("\nprocess Id : ");
 		scanf("%d",&val);
@@ -86,17 +87,18 @@ main(){
 		printf("\nprocess priority :");
 		scanf("%d",&val);
 		p1[i].priority=val;
-		p1[i].Remaining_time=p[i].burst_time;
-		p1[i].Num = i+1;
+		p1[i].Res_time=p1[i].burst_time;
 	}
 
 	//sort the processes
-	int start_pos,end_pos,z;
+	int start_pos,end_pos,z,y;
 	bool flag;
 	z=0;
+	y=1;
 	sort_arival(n);
 	start_pos=0;
 	end_pos=0;
+	next_index[0]=0;
 	while(z<n){
 		start_pos=end_pos;
 		flag=true;
@@ -106,6 +108,8 @@ main(){
 			}
 			else{
 				end_pos++;
+				next_index[y]=end_pos;
+				y++;
 				flag = false;
 			}
 			z++;
@@ -113,11 +117,114 @@ main(){
 		priority_sort(start_pos,end_pos-1);
 	}
 	
-	while(true){
-		if(q1[0]!=NULL){
-		
+	int clock=0;
+	int next_a_time;
+	z=0;
+	y=0;
+	while(p1[0].Num==0 && p2[0].Num==0){
+		if(p1[0]!=null){
+			flag = true
+			while(flag){
+				b_time=p1[next_index[z]].burst_time;
+				if(p1[next_index[z]].start_time==-1){
+					p1[next_index[z]].start_time=clock;
+					p1[next_index[z]].Res_time=clock;
+				}
+				else{
+					p1[next_index[z]].Res_time=clock;
+				}
+				next_a_time = p[next_index[z+1]].arrival_time;
+				if(p1[next_index[z+1]].priority<p1[next_index[z]].priority){
+					if(b_time>next_a_time){
+						p1[next_index[z]].burst_time = b_time - (next_a_time-clock);
+						clock = clock + (next_a_time-clock);
+						p1[next_index[z]].stop_time = next_a_time-1;
+						printf("\n%d ran for %d",p1[next_index[z]].process_ID,(next_a_time-clock));
+						p2[y]=p1[z];
+						p2[y].Num++;
+						
+						for(int i=0;i<n-1;i++){
+							p1[i]=p1[i+1]
+						}
+						
+						n--;
+						z++;
+						y++;
+					}
+					else{
+						p1[next_index[z]].burst_time = b_time - (next_a_time-clock);
+						clock = clock + (next_a_time-clock);
+						p1[next_index[z]].stop_time = next_a_time-1;
+						printf("\n%d ran for %d",p1[next_index[z]].process_ID,(next_a_time-clock);
+						
+						for(int i=0;i<=n;i++){
+							p1[i]=p1[i+1];
+						}
+						z++;
+						n--;
+					}
+				}
+				else{
+					p1[next_index[z]].burst_time = b_time - (next_a_time-clock);
+					clock = clock + (next_a_time-clock);
+					p1[next_index[z]].stop_time = next_a_time-1;
+					printf("\n%d ran for %d",p1[next_index[z]].process_ID,(next_a_time-clock);
+						
+					for(int i=0;i<=n;i++){
+						p1[i]=p1[i+1];
+					}
+					z++;
+					n--;
+				}
+				
+				if(p1[0]==NULL){
+					flag=false;
+				}
+			}
+		}
+		else{
+			flag = true
+			while(flag){
+				b_time=p2[0].burst_time;
+				if(p2[0].start_time==-1){
+					p2[0].start_time=clock;
+					p2[0].Res_time=clock;
+				}
+				else{
+					p2[0].Res_time=clock;
+				}
+					if(b_time>=2){
+						p2[0].burst_time = b_time - 2;
+						clock = clock + 2;
+						p2[0].stop_time = next_a_time-1;
+						printf("\n%d ran for 2 sec",p2[0].process_ID);
+						
+						struct process_structure a;
+						a=p2[0];
+						for(int i=0;i<n-1;i++){
+							p2[i]=p2[i+1]
+						}
+						p2[y]=a;
+						
+					}
+					else{
+						p2[0].burst_time = b_time - 1;
+						clock = clock + 1;
+						p2[0].stop_time = clock;
+						printf("\n%d ran for 1 sec",p2[0].process_ID);
+						
+						for(int i=0;i<n-1;i++){
+							p2[i]=p2[i+1];
+						}
+						
+						y--;
+					}
+				
+				if(p1[0]==NULL){
+					flag=false;
+				}
+			}
 		}
 	}
-	
-		
 }
+
