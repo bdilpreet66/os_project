@@ -1,230 +1,185 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include<stdio.h>
 
+int n=0;//total number of processes
+int clock = 0;//a clock having the current time
+int cur_p=9999;
+int cur_index=-1;
+int rr_index=0;
 
-struct process_structure{
-	int process_ID;
-	int arrival_time;
-	int burst_time;
-	int priority;
-	int Num=0;
-	int Finish_time;
-	int Waiting_time;
-	int Start_time=-1;
-	int stop_time;
-	int Res_time;
-}p1[50],p2[50];
+struct process{
+	int id;//process id
+	int at;//arival time
+	int bt;//burst time
+	int p;//priority
+	int start_time[100];//index containg all the starting times of process
+	int start_index=0;//current index of start_time
+	int status = -1;//process status waiting: -1 , finished: 0, running:1;
+	int waiting_time=0;//total time the process was in waiting
+	int next_process_index=0;//next process address
+	int my_index;//current process address
+	int visited=0;
+}proc[2][50];
 
-//sort according to arival time
+int queue=0;//queue number
+int q1_proc,q2_proc;//number of process in q1 qnd q2
+
+//to sort by arrival time
 void sort_arival(int n){
-	struct process_structure a;
+	struct process a;
 	int min,pos;
 	
 	for(int i=0;i<n-1;i++){
-		min = p1[i].arrival_time;
+		min = proc[queue][i].at;
 		pos = i;	
 		for(int j=i+1;j<n;j++){
-			if(min>p1[j].arrival_time){
-				min = p1[j].arrival_time;
+			if(min>proc[queue][j].at){
+				min = proc[queue][j].at;
 				pos = j;
 			}
 		}
 		
 		if(i!=pos){
-			a=p1[i];
-			p1[i]=p1[pos];
-			p1[pos]=a;
+			a=proc[queue][i];
+			proc[queue][i]=proc[queue][pos];
+			proc[queue][pos]=a;
 		}
 	}
 }
 
+int get_next(int index){
+	int n=0;//if 0 current process will continue runnig else it will be sent to q2
+	for(int i=0;i<q1_proc;i++){
+		if(proc[queue][i].at<=clock && proc[queue][i].status!=0){
+			proc[queue][i].my_index=i;
+			if(proc[queue][i].p<cur_p){
+				proc[queue][index].next_process_index=i;
+				cur_p=proc[queue][i].p;
+				n=1;
+			}
+		}
+	}
+	return n;
+}
 
-//this part containts scheduler config
-void priority_sort(int start,int end){
-	struct process_structure a;
-	int max,pos;
+void move_to_last(){
+	struct process a;
+	int i=0;
+	a = proc[queue][0];
 	
-	for(int i=start;i<=end-1;i++){
-		max = p1[i].priority;
-		pos = i;
-		for(int j=i+1;j<=end;j++){
-			if(max>p1[j].priority){
-				max = p1[j].priority;
-				pos = j;
-			}
-		}
-		
-		if(i!=pos){
-			a=p1[i];
-			p1[i]=p1[pos];
-			p1[pos]=a;
-		}
+	while(i<q2_proc-1){
+		proc[queue][i]=proc[queue][i+1];
+		i++;
 	}
+	proc[queue][i]=a;
 }
 
-//the main function
+void pop(){
+	int i=0;
+	while(i<q2_proc-1){
+		proc[queue][i]=proc[queue][i+1];
+		i++;
+	}
+	q2_proc--;
+}
+
 main(){
-	int n;
+	int val,res_index,a;
 	printf("Enter the number of processes : ");
 	scanf("%d",&n);
-	int val;
-	int next_index[n];
-	
+	struct process result[n];
+	q1_proc = n;
+	q2_proc = 0;
+	res_index = 0;
 	//get the process imformation
 	
 	for(int i=0;i<n;i++){
-		p1[i].Num = n;
 		printf("\nEnter the process information for the process %d :",i+1);
 		printf("\nprocess Id : ");
 		scanf("%d",&val);
-		p1[i].process_ID = val;
+		proc[queue][i].id=val;
 		printf("\nprocess arival time :");
 		scanf("%d",&val);
-		p1[i].arrival_time=val;
+		proc[queue][i].at=val;
 		printf("\nprocess burst time :");
 		scanf("%d",&val);
-		p1[i].burst_time=val;
+		proc[queue][i].bt=val;
 		printf("\nprocess priority :");
 		scanf("%d",&val);
-		p1[i].priority=val;
-		p1[i].Res_time=p1[i].burst_time;
-	}
-
-	//sort the processes
-	int start_pos,end_pos,z,y;
-	bool flag;
-	z=0;
-	y=1;
-	sort_arival(n);
-	start_pos=0;
-	end_pos=0;
-	next_index[0]=0;
-	while(z<n){
-		start_pos=end_pos;
-		flag=true;
-		while(flag){
-			if(p1[z].arrival_time==p1[z+1].arrival_time){
-				end_pos++;
-			}
-			else{
-				end_pos++;
-				next_index[y]=end_pos;
-				y++;
-				flag = false;
-			}
-			z++;
-		}
-		priority_sort(start_pos,end_pos-1);
+		proc[queue][i].p=val;
 	}
 	
-	int clock=0;
-	int next_a_time;
-	z=0;
-	y=0;
-	while(p1[0].Num==0 && p2[0].Num==0){
-		if(p1[0]!=null){
-			flag = true
-			while(flag){
-				b_time=p1[next_index[z]].burst_time;
-				if(p1[next_index[z]].start_time==-1){
-					p1[next_index[z]].start_time=clock;
-					p1[next_index[z]].Res_time=clock;
+	sort_arival(q1_proc);
+	
+	get_next(0);
+	cur_index = proc[queue][cur_index].next_process_index;
+	
+	while(q1_proc!=0 || q2_proc!=0){
+		if(q1_proc!=0){
+			//for queue 1
+			queue=0;
+			if((proc[queue][cur_index].status!=0) && (proc[queue][cur_index].at<=clock)){
+				proc[queue][cur_index].start_time[proc[queue][cur_index].start_index]=clock;
+				proc[queue][cur_index].start_index++;
+				clock++;
+				proc[queue][cur_index].bt--;
+				a=get_next(cur_index);
+				if(proc[queue][cur_index].bt==0){
+					q1_proc--;
+					a=cur_index;
+					cur_index = proc[queue][cur_index].next_process_index;
+					proc[queue][a].status=0;
+					result[res_index]=proc[queue][a];
+					res_index++;
 				}
-				else{
-					p1[next_index[z]].Res_time=clock;
-				}
-				next_a_time = p[next_index[z+1]].arrival_time;
-				if(p1[next_index[z+1]].priority<p1[next_index[z]].priority){
-					if(b_time>next_a_time){
-						p1[next_index[z]].burst_time = b_time - (next_a_time-clock);
-						clock = clock + (next_a_time-clock);
-						p1[next_index[z]].stop_time = next_a_time-1;
-						printf("\n%d ran for %d",p1[next_index[z]].process_ID,(next_a_time-clock));
-						p2[y]=p1[z];
-						p2[y].Num++;
-						
-						for(int i=0;i<n-1;i++){
-							p1[i]=p1[i+1]
-						}
-						
-						n--;
-						z++;
-						y++;
-					}
-					else{
-						p1[next_index[z]].burst_time = b_time - (next_a_time-clock);
-						clock = clock + (next_a_time-clock);
-						p1[next_index[z]].stop_time = next_a_time-1;
-						printf("\n%d ran for %d",p1[next_index[z]].process_ID,(next_a_time-clock);
-						
-						for(int i=0;i<=n;i++){
-							p1[i]=p1[i+1];
-						}
-						z++;
-						n--;
+				if(a){
+					a=cur_index;
+					cur_index = proc[queue][cur_index].next_process_index;
+					proc[queue+1][rr_index]=proc[queue][a];
+					rr_index++;
+					q2_proc++;
+					q1_proc--;
+					for(int i=a;i<q1_proc-1;i++){
+						proc[queue][i]=proc[queue][i+1];
 					}
 				}
-				else{
-					p1[next_index[z]].burst_time = b_time - (next_a_time-clock);
-					clock = clock + (next_a_time-clock);
-					p1[next_index[z]].stop_time = next_a_time-1;
-					printf("\n%d ran for %d",p1[next_index[z]].process_ID,(next_a_time-clock);
-						
-					for(int i=0;i<=n;i++){
-						p1[i]=p1[i+1];
-					}
-					z++;
-					n--;
-				}
-				
-				if(p1[0]==NULL){
-					flag=false;
-				}
+			}
+			else{
+				clock++;
 			}
 		}
+		else if(q2_proc!=0){
+			//for queue 2
+			queue=1;
+			val=1;
+			if(proc[queue][cur_index].status!=0){
+				for(int i=0;i<2;i++){
+					proc[queue][0].start_time[proc[queue][0].start_index]=clock;
+					proc[queue][0].start_index++;
+					clock++;
+					proc[queue][0].bt--;
+					if(proc[queue][0].bt==0){
+						q2_proc--;
+						proc[queue][0].status=0;
+						result[res_index]=proc[queue][0];
+						res_index++;
+						val=0;
+						pop();
+						break;
+					}
+				}
+				if(val){
+					move_to_last();
+				}
+			}	
+		}
 		else{
-			flag = true
-			while(flag){
-				b_time=p2[0].burst_time;
-				if(p2[0].start_time==-1){
-					p2[0].start_time=clock;
-					p2[0].Res_time=clock;
-				}
-				else{
-					p2[0].Res_time=clock;
-				}
-					if(b_time>=2){
-						p2[0].burst_time = b_time - 2;
-						clock = clock + 2;
-						p2[0].stop_time = next_a_time-1;
-						printf("\n%d ran for 2 sec",p2[0].process_ID);
-						
-						struct process_structure a;
-						a=p2[0];
-						for(int i=0;i<n-1;i++){
-							p2[i]=p2[i+1]
-						}
-						p2[y]=a;
-						
-					}
-					else{
-						p2[0].burst_time = b_time - 1;
-						clock = clock + 1;
-						p2[0].stop_time = clock;
-						printf("\n%d ran for 1 sec",p2[0].process_ID);
-						
-						for(int i=0;i<n-1;i++){
-							p2[i]=p2[i+1];
-						}
-						
-						y--;
-					}
-				
-				if(p1[0]==NULL){
-					flag=false;
-				}
-			}
+			clock++;
+		}
+	}
+	
+	for(int i=0;i<=res_index;i++){
+		for(int j=0;j<=result[i].start_index;j++){
+			printf("\nThe process %d was running at time %d sec.",result[i].id,result[i].start_time[j]);
 		}
 	}
 }
-
