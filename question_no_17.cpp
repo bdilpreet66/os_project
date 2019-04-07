@@ -49,7 +49,8 @@ void sort_arival(int n){
 int get_next(int index){
 	int n=0;//if 0 current process will continue runnig else it will be sent to q2
 	for(int i=0;i<q1_proc;i++){
-		if(proc[queue][i].at<=clock && proc[queue][i].status!=0){
+		if(proc[queue][i].at<=clock && proc[queue][i].bt!=0){
+			printf("hello");
 			proc[queue][i].my_index=i;
 			if(proc[queue][i].p<cur_p){
 				proc[queue][index].next_process_index=i;
@@ -115,6 +116,11 @@ main(){
 	
 	while(q1_proc!=0 || q2_proc!=0){
 		if(q1_proc!=0){
+			printf("\nID %d",proc[queue][cur_index].id);
+			printf("\nat %d",proc[queue][cur_index].at);
+			printf("\nbt %d",proc[queue][cur_index].bt);
+			printf("\np %d",proc[queue][cur_index].p);
+			printf("\nstatus %d",proc[queue][cur_index].status);
 			//for queue 1
 			queue=0;
 			if((proc[queue][cur_index].status!=0) && (proc[queue][cur_index].at<=clock)){
@@ -122,23 +128,27 @@ main(){
 				proc[queue][cur_index].start_index++;
 				clock++;
 				proc[queue][cur_index].bt--;
-				a=get_next(cur_index);
+				a=cur_index;
 				if(proc[queue][cur_index].bt==0){
 					q1_proc--;
-					a=cur_index;
+					cur_p=9999;
+					get_next(cur_index);
 					cur_index = proc[queue][cur_index].next_process_index;
 					proc[queue][a].status=0;
 					result[res_index]=proc[queue][a];
 					res_index++;
+					for(int i=a;i<q1_proc;i++){
+						proc[queue][i]=proc[queue][i+1];
+					}
 				}
-				if(a){
-					a=cur_index;
+				if(get_next(cur_index)){
+					get_next(cur_index);
 					cur_index = proc[queue][cur_index].next_process_index;
 					proc[queue+1][rr_index]=proc[queue][a];
 					rr_index++;
 					q2_proc++;
 					q1_proc--;
-					for(int i=a;i<q1_proc-1;i++){
+					for(int i=a;i<q1_proc;i++){
 						proc[queue][i]=proc[queue][i+1];
 					}
 				}
